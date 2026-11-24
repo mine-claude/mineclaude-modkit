@@ -70,6 +70,40 @@ jobs:
           git checkout -- examples || true
           git clean -fdq examples || true
 
+      # O kit tem de funcionar PELO PACOTE INSTALADO, pelos quatro caminhos. O executável começa com
+      # `#!/usr/bin/env node`, então `bunx` e `npx` o rodam no NODE; `build` e `pack` precisam do Bun e por isso se
+      # re-executam com `bun`. Esta etapa é a guarda contra aquilo voltar.
+      - name: Prova pelo pacote instalado (bun/bunx e npm/npx)
+        run: |
+          set -euo pipefail
+          bun pm pack --destination /tmp
+          tgz="$(ls -1 /tmp/*.tgz | head -1)"
+          bin='node_modules/@mineclaude/modkit/bin/mineclaude-modkit.mjs'
+
+          # Cada gerenciador com o seu executador, que é como a pessoa usa de verdade: o `bun add` e o
+          # `npm install` escrevem atalhos de formato diferente em node_modules/.bin, e um `npx` depois de um
+          # `bun add` não acha o comando (vai procurar no registro, onde o pacote não está).
+          prova() { # $1 = diretório do projeto, $2... = o caminho de chamada
+            local dir="$1"; shift
+            local nome="prova_$(echo "$*" | tr -dc 'a-z' | cut -c1-10)"
+            ( cd "$dir" && rm -rf "$nome" \
+              && "$@" new "$nome" \
+              && "$@" check "$nome" \
+              && "$@" pack "$nome" \
+              && test -f "$nome/$nome.mcmod" )
+            echo "ok: $* ($nome)"
+          }
+
+          pb="$(mktemp -d)"; ( cd "$pb" && echo '{ "name": "prova-bun", "private": true }' > package.json && bun add "$tgz" )
+          prova "$pb" bunx mineclaude-modkit
+          prova "$pb" bun "$bin"
+
+          # `npx` e `node`: o executável começa com `#!/usr/bin/env node`, então estes rodam o kit NO NODE, e o
+          # `pack` tem de saltar sozinho para o bun. É exatamente o que quebrou na 0.2.1.
+          pn="$(mktemp -d)"; ( cd "$pn" && echo '{ "name": "prova-npm", "private": true }' > package.json && npm install "$tgz" )
+          prova "$pn" npx mineclaude-modkit
+          prova "$pn" node "$bin"
+
       - name: Monta os anexos
         id: kit
         run: |

@@ -19,6 +19,12 @@ import { MCMOD_EXT } from "./rules.js";
 // o package.json fica uma pasta acima de dist/ (e de src/, quando rodado direto pelo Bun)
 const PKG = fileURLToPath(new URL('../package.json', import.meta.url));
 export const VERSION = JSON.parse(fs.readFileSync(PKG, 'utf8')).version;
+/**
+ * Os comandos que MONTAM as entradas do mod, e por isso precisam do Bun (`Bun.build`).
+ * `bin/mineclaude-modkit.mjs` se re-executa com `bun` quando um destes é chamado de dentro do Node.
+ * Os outros (`new`, `check`, `sdk`, `help`) só usam `node:fs` e rodam nos dois.
+ */
+export const NEEDS_BUN = ['build', 'pack'];
 const USAGE = `mineclaude-modkit ${VERSION} — ferramentas de mod do MineClaude
 
   modkit new <id> [--dir <pasta>] [--js]   cria um mod novo (TypeScript; --js para JavaScript)

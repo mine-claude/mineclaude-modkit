@@ -1,6 +1,6 @@
 {
   "name": "@mineclaude/modkit",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "MineClaude modkit: o contrato de mods (casca do SDK + tipos), a CLI autonoma (new/build/pack/check), modelos e documentacao",
   "license": "UNLICENSED",
   "private": true,
@@ -30,8 +30,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "prepare": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",

@@ -1,5 +1,22 @@
 # Mudanças do modkit
 
+## 0.2.2 — 2026-11-24
+
+**`bunx mineclaude-modkit pack` falhava dizendo que precisava do Bun.** O executável começa com
+`#!/usr/bin/env node`, e o `bunx` respeita isso: rodava o kit no Node, onde o `Bun.build` não existe. Ou seja, o
+comando recusava por falta do Bun justamente quando era o Bun que o havia chamado. Só funcionava com
+`bun --bun x mineclaude-modkit pack`.
+
+Agora, quando o comando precisa do Bun (`build` e `pack`) e o processo não é o Bun, o executável **se re-executa com
+`bun`**, repassando os argumentos, a saída e o código de saída. Sem o Bun no PATH, a mensagem diz o que instalar.
+`new`, `check`, `sdk` e `help` continuam rodando no Node, sem salto nenhum.
+
+A CI passou a rodar a CLI pelos quatro caminhos — `bunx`, `npx`, `node` e `bun` — a partir do pacote instalado de
+verdade, e não só do checkout.
+
+Também: o script `prepare` saiu do `package.json`. O `dist/` é versionado, então não há nada para compilar na
+instalação, e um `prepare` que chama o `tsc` quebraria quem instala o pacote sem as dependências de desenvolvimento.
+
 ## 0.2.1 — 2026-11-24
 
 Correções do empacotamento da própria Release, achadas pela suíte de contrato do jogo:

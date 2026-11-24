@@ -23,7 +23,13 @@ const fail: (m: string) => never = (m) => { throw new BuildError(m); };
 
 /** -> [{ side, outfile, bytes }] */
 export async function buildMod(dir: string, { clean = true, log = console.log }: { clean?: boolean; log?: (m: string) => void } = {}): Promise<BuiltSide[]> {
-  if (typeof Bun === 'undefined') fail('o build precisa do Bun (https://bun.sh): é ele que monta as entradas');
+  // Normalmente não se chega aqui sem o Bun: `bin/mineclaude-modkit.mjs` se re-executa com `bun` quando o comando
+  // precisa dele. Esta guarda é para quem usa o modkit como BIBLIOTECA (`import { buildMod }`) de dentro do Node.
+  if (typeof Bun === 'undefined') {
+    fail('buildMod() monta as entradas do mod com o Bun (https://bun.sh), e este processo não é o Bun.\n'
+      + '  Pela linha de comando, use `mineclaude-modkit build` / `pack`: eles mesmos se re-executam no Bun.\n'
+      + '  Como biblioteca, rode o seu script com `bun` em vez de `node`.');
+  }
   let pkg: Record<string, any> = {};
   try { pkg = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8')); } catch (e: any) { fail(`package.json ausente ou inválido em ${dir} (${e.message})`); }
   const sources = pkg.scripts?._sources ?? {};
