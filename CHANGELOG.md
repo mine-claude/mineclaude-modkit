@@ -1,5 +1,9 @@
 # Mudanças do modkit
 
+## 0.2.4 — 2026-11-24
+
+- Itens novos do jogo nos tipos (gases e escada: BaseItemName)
+
 ## 0.2.3 — 2026-11-24
 
 - o aviso dos arquivos gerados passa a citar o comando novo do jogo (bun run sdk:sync): o kit virou submodulo do jogo e a geracao tem um comando so
