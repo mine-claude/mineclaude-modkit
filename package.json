@@ -1,6 +1,6 @@
 {
   "name": "@mineclaude/modkit",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "MineClaude modkit: o contrato de mods (casca do SDK + tipos), a CLI autonoma (new/build/pack/check), modelos e documentacao",
   "license": "UNLICENSED",
   "private": true,

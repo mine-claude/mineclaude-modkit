@@ -4117,7 +4117,7 @@ export declare class InputAction {
   fixed?: boolean;
   onPress?(e: InputEvent): void; onRelease?(e: InputEvent): void;
 }
-export interface InputActionHandle { readonly id: string; readonly name: string; readonly category: string; isDown(): boolean; value(): number; wasPressed(): boolean; keys(): string[]; onPress(fn: (e: InputEvent) => void): () => void; onRelease(fn: (e: InputEvent) => void): () => void; press(): boolean; release(): void; tap(): boolean; }
+export interface InputActionHandle { readonly id: string; readonly name: string; readonly category: string; isDown(): boolean; value(): number; wasPressed(): boolean; /** As teclas da acao agora: a que o JOGADOR escolheu em Opcoes -> Atalhos, senao o `rebind` desta sessao, senao as padrao. */ keys(): string[]; onPress(fn: (e: InputEvent) => void): () => void; onRelease(fn: (e: InputEvent) => void): () => void; press(): boolean; release(): void; tap(): boolean; }
 export interface InputDeviceApi { set(action: string, value: number | boolean): void; press(action: string): void; release(action: string): void; look(dx: number, dy: number): void; }
 /** ctx.client.input: ações de entrada nomeadas, do jogo e dos mods. Um id sem ':' é o do próprio mod, ou do jogo ('jump', 'attack'...). */
 export interface ClientInput {
@@ -7226,6 +7226,10 @@ export interface AudioStreamOptions {
   jitterMs?: number;
   /** Quanto tempo de silêncio seguido antes de recomeçar a encher o buffer (padrão 4 × jitterMs, mínimo 240 ms). */
   maxJitterMs?: number;
+  /**
+   * 0..**4** (padrão 1). Passa de 1 de propósito, e só num STREAM: "aumentar ESTA pessoa" é necessidade real num
+   * chat de voz, e um stream é uma voz, não uma mistura (bus, mod e emitter seguem 0..1). 4 é reforço, não amplificador.
+   */
   volume?: number;
   /** Raio em blocos da atenuação por distância, 1..128 (padrão 24). */
   radius?: number;
@@ -7247,6 +7251,7 @@ export interface AudioStream {
   /** Oferece UM quadro codificado. `meta.seq` numera quadros; sem ele, são tomados como consecutivos. */
   push(bytes: Uint8Array, meta?: { seq?: number }): boolean;
   setPosition(position: Pos): void;
+  /** 0..4, como o `volume` das opções. */
   setVolume(volume: number): void;
   /** Joga fora o que está no buffer sem fechar o stream (quem falava parou; a próxima fala começa limpa). */
   flush(): void;
@@ -7993,7 +7998,22 @@ export interface MediaCaptureOptions {
   sampleRate?: number;
   /** Frequência do tom, só para `source: 'synthetic'` (20..8000 Hz, padrão 440). */
   tone?: number;
-  deviceId?: string;
+  /**
+   * O microfone a abrir, de `devices()`. Um id salvo de outra sessão pode não existir mais: nesse caso abre o
+   * aparelho PADRÃO, e `openedDeviceId()` diz qual abriu de verdade.
+   */
+  deviceId?: string | null;
+  /**
+   * Ganho do microfone, 0..3 (1 = o aparelho como ele vem), aplicado ANTES do codificador: o que o mod manda, o que
+   * os outros ouvem e o que `onLevel` informa são o mesmo som. Muda ao vivo por `setGain`.
+   */
+  gain?: number;
+  /** Ouvir o próprio microfone na saída da página ("testar o microfone"). Desligado por padrão: é realimentação. */
+  monitor?: boolean;
+  /** As três limpezas do navegador, como restrição de `getUserMedia`. Todas ligadas por padrão. */
+  noiseSuppression?: boolean;
+  echoCancellation?: boolean;
+  autoGainControl?: boolean;
   onFrame?(frame: MediaFrame): void;
   onLevel?(level: number): void;
   onState?(state: MediaState): void;
@@ -8009,13 +8029,34 @@ export interface MediaCapabilities {
   decode: boolean;
   codecs: readonly MediaCodec[];
   secureContext: boolean;
+  /** Dá para LISTAR os aparelhos de entrada (`enumerateDevices`)? Sem isso há um microfone: o padrão. */
+  devices: boolean;
+  /**
+   * Por onde o áudio chega ao script: `'processor'` (`MediaStreamTrackProcessor`, o Chromium) ou `'worklet'`
+   * (`AudioWorklet`, o Firefox). `null` quando este navegador não captura. O mod não escolhe — os dois entregam os
+   * mesmos quadros pelo mesmo `onFrame` — mas é o que dizer num diagnóstico.
+   */
+  pipeline: 'processor' | 'worklet' | null;
   /** Por que não, em uma frase, para o mod mostrar ao jogador. */
   reason: string | null;
+}
+/** Um aparelho de entrada de áudio, como `ctx.client.media.devices()` o lista. */
+export interface MediaDevice {
+  readonly deviceId: string;
+  /**
+   * O nome do aparelho — **vazio até o jogador ter permitido o microfone uma vez** (antes disso o navegador não
+   * nomeia os aparelhos). Um mod lista "Microfone 1", "Microfone 2" nesse caso, ou pede permissão e lista de novo.
+   */
+  readonly label: string;
+  readonly groupId: string;
+  /** É o aparelho que o navegador abriria por conta própria. */
+  readonly isDefault: boolean;
 }
 export interface MediaCaptureStats {
   frames: number; bytes: number; refused: number; errors: number;
   state: MediaState; level: number; seq: number;
   source: MediaSource; codec: MediaCodec; frameMs: number; bitrate: number; liveMs: number;
+  gain: number; monitor: boolean; deviceId: string | null;
 }
 export interface MediaCapture {
   readonly name: string;
@@ -8033,6 +8074,15 @@ export interface MediaCapture {
   start(): Promise<boolean>;
   /** Mantém o aparelho aberto e para de entregar quadros (apertar-para-falar solto). */
   setPaused(paused: boolean): boolean;
+  /** O ganho agora (0..3). */
+  readonly gain: number;
+  /** Troca o ganho AO VIVO, sem reabrir e sem perguntar de novo. Vale antes do `start()` também. */
+  setGain(gain: number): boolean;
+  readonly monitor: boolean;
+  /** Liga/desliga ouvir-se (o "testar microfone"), ao vivo. */
+  setMonitor(on: boolean): boolean;
+  /** Qual microfone está ABERTO agora, como o navegador o informa, ou `null` com nada aberto. */
+  openedDeviceId(): string | null;
   /** Fecha o aparelho (a luz do microfone apaga). `start()` abre de novo, perguntando de novo. */
   stop(): void;
   /** `stop()`, e esta alça não conta mais na cota do mod. */
@@ -8046,6 +8096,13 @@ export interface MediaCapture {
 export interface ClientMediaApi {
   capabilities(): MediaCapabilities;
   capture(options?: MediaCaptureOptions): MediaCapture;
+  /**
+   * Os aparelhos de ENTRADA deste navegador, para o mod deixar o jogador escolher (`deviceId` do `capture`). Os
+   * nomes só vêm depois de o jogador ter permitido o microfone uma vez, e os ids valem por site e por sessão.
+   */
+  devices(): Promise<readonly MediaDevice[]>;
+  /** O jogador plugou ou tirou um fone. Devolve a função que para de escutar. */
+  onDevicesChange(fn: () => void): () => void;
   states(): readonly MediaState[];
 }
 /**

@@ -1,5 +1,9 @@
 # Mudanças do modkit
 
+## 0.2.5 — 2026-11-24
+
+- ctx.client.media: devices()/onDevicesChange(), gain e monitor com setGain/setMonitor ao vivo, as tres limpezas do navegador como opcao, openedDeviceId() e capabilities().pipeline (processor | worklet, por causa do Firefox). action.keys() passa a responder a tecla que o jogador escolheu. O volume de UM stream de audio vai a 400%.
+
 ## 0.2.4 — 2026-11-24
 
 - Itens novos do jogo nos tipos (gases e escada: BaseItemName)
