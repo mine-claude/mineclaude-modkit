@@ -1,5 +1,9 @@
 # Mudanças do modkit
 
+## 0.2.3 — 2026-11-24
+
+- o aviso dos arquivos gerados passa a citar o comando novo do jogo (bun run sdk:sync): o kit virou submodulo do jogo e a geracao tem um comando so
+
 ## 0.2.2 — 2026-11-24
 
 **`bunx mineclaude-modkit pack` falhava dizendo que precisava do Bun.** O executável começa com

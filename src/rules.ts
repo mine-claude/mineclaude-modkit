@@ -1,5 +1,5 @@
 // As regras do servidor que um mod precisa obedecer, como DADOS: nenhuma linha do motor.
-// GERADO a partir do jogo por `bun tools/modkit/sync.mjs`: não edite à mão.
+// GERADO a partir do jogo por `bun run sdk:sync`: não edite à mão.
 //
 // São exatamente os valores que a descoberta de mods do servidor usa para aceitar ou recusar um mod, então o que
 // `modkit check` aprova aqui é o que o servidor aprova lá. O que NÃO está aqui (carregar o mod de verdade, rodar o

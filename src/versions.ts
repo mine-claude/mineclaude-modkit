@@ -1,6 +1,6 @@
 // Os PREDICADOS DE VERSÃO do manifesto, no modelo do Fabric: os termos de um texto são E, uma lista é OU
 // ("^1.2", ">=1.0 <2", ["1.x", "2.x"]). "^" mantém o major, inclusive o zero. Nome de versão opaco só aceita igualdade.
-// GERADO a partir do jogo por `bun tools/modkit/sync.mjs`: não edite à mão.
+// GERADO a partir do jogo por `bun run sdk:sync`: não edite à mão.
 export type Semantic = { parts: number[]; pre: string[] | null };
 export type Predicate = (version: string) => boolean;
 // Browser-safe predicates for mod metadata. Fabric-style ranges: terms in a

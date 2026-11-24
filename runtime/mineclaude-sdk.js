@@ -1,6 +1,6 @@
 // A CASCA do SDK do MineClaude. O `modkit new` copia este arquivo para dentro de cada mod: importe daqui.
 // Não tem código de jogo nenhum: as classes são entregues pelo jogo que carrega o mod, por globalThis.MineClaude.
-// GERADO a partir do jogo por `bun tools/modkit/sync.mjs`: não edite à mão.
+// GERADO a partir do jogo por `bun run sdk:sync`: não edite à mão.
 export const {
   AttributeType,
   BlockEntityRenderer,

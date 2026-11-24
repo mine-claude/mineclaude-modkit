@@ -1,5 +1,5 @@
 // Declarações de tipo dos mods do MineClaude (autocompletar no editor). O texto do comportamento: docs/guia-de-mods.md.
-// GERADO a partir do jogo por `bun tools/modkit/sync.mjs`: não edite à mão.
+// GERADO a partir do jogo por `bun run sdk:sync`: não edite à mão.
 //
 // Use in a mod (JavaScript):
 //   // @ts-check
