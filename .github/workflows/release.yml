@@ -79,7 +79,8 @@ jobs:
           # 1) o pacote, instalável com `bun add ./arquivo.tgz` ou `npm i ./arquivo.tgz`
           bun pm pack --destination .
           tgz="$(ls -1 *.tgz | head -1)"
-          mv "$tgz" "mineclaude-modkit-$version.tgz"
+          # o nome que o `bun pm pack` dá já pode ser este (o pacote é @mineclaude/modkit): mover para si mesmo falha
+          [ "$tgz" = "mineclaude-modkit-$version.tgz" ] || mv "$tgz" "mineclaude-modkit-$version.tgz"
           # 2) o kit inteiro, para descompactar e rodar
           out="mineclaude-modkit-$version"
           mkdir -p "pack/$out"

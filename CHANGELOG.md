@@ -1,5 +1,14 @@
 # Mudanças do modkit
 
+## 0.2.1 — 2026-11-24
+
+Correções do empacotamento da própria Release, achadas pela suíte de contrato do jogo:
+
+- O cabeçalho da casca (`runtime/mineclaude-sdk.js`) e o comentário do empacotador de um arquivo
+  (`templates/pack.mjs`) citavam caminhos internos do repositório do jogo. Os dois arquivos vão para dentro de cada
+  mod, então agora saem reescritos: o comando que os gera é nomeado como `modkit`, sem caminho de motor.
+- O workflow de Release falhava ao renomear o pacote para um nome que o `bun pm pack` já tinha dado.
+
 ## 0.2.0 — 2026-11-24
 
 A API do jogo andou bastante desde a 0.1.0. Esta versão traz o contrato em dia: a casca, os tipos, as regras e a

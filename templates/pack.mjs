@@ -17,7 +17,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SIDES = ['main', 'server', 'client'];
 // Folders the game loads from a mod besides its scripts (lang/model/loot/recipe/tag data) and the ones the
 // browser fetches (textures, sounds, animations, generic assets). Everything else in the repo stays out of the
-// package. KEEP EQUAL to the game's own list (tests/suites/mods-publish-pack.js compares the bytes).
+// package. This list has to stay EQUAL to the game's own: the game compares the bytes of the package this script
+// writes with the bytes its own packer writes, and refuses any difference.
 const ASSET_DIRS = ['assets', 'lang', 'models', 'textures', 'sounds', 'data', 'animations'];
 // Only the keys the game knows; `scripts` is reduced to the entry sides (the `build` script is author tooling).
 const MCMOD_KEYS = ['name', 'version', 'description', 'author', 'authors', 'homepage', 'license', 'scripts', 'private', 'type', '$schema', 'mineclaude'];

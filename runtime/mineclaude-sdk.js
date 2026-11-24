@@ -1,6 +1,6 @@
-// MineClaude SDK. `sdk new` copies this file into each mod: import from it, never from the game's code.
-// It holds no game code: the classes are supplied by the game that loads the mod.
-// GENERATED from SDK_EXPORTS (shared/modloader/content-classes.js) by `node packages/cli/cli.js sync`: do not edit by hand.
+// A CASCA do SDK do MineClaude. O `modkit new` copia este arquivo para dentro de cada mod: importe daqui.
+// Não tem código de jogo nenhum: as classes são entregues pelo jogo que carrega o mod, por globalThis.MineClaude.
+// GERADO a partir do jogo por `bun tools/modkit/sync.mjs`: não edite à mão.
 export const {
   AttributeType,
   BlockEntityRenderer,
