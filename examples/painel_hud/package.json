@@ -1,0 +1,15 @@
+{
+  "name": "painel_hud",
+  "version": "0.1.0",
+  "description": "Uma linha na HUD com a hora do mundo. So no navegador.",
+  "authors": [
+    "MineClaude"
+  ],
+  "private": true,
+  "scripts": {
+    "client": "dist/client/main.js",
+    "_sources": {
+      "client": "src/client.ts"
+    }
+  }
+}

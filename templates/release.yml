@@ -1,0 +1,56 @@
+name: release
+# Uma tag `v<versão>` (ou uma execução manual) monta o mod e publica o `.mcmod` como anexo de uma Release.
+# Sem action de terceiros: só o `actions/checkout` do próprio GitHub; o Bun vem do instalador oficial.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instala o Bun
+        run: |
+          set -euo pipefail
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Monta e empacota o .mcmod
+        run: bun tools/pack.mjs
+
+      # Dois nomes para o mesmo pacote: o com a versão, e o `<id>.mcmod` puro, que é o nome
+      # que o servidor exige quando o arquivo é jogado direto na MODS_DIR.
+      - name: Nomeia os arquivos
+        id: files
+        run: |
+          set -euo pipefail
+          id="$(jq -r .name package.json)"
+          version="$(jq -r .version package.json)"
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          test -f "$id-$version.mcmod"
+          cp "$id-$version.mcmod" "$id.mcmod"
+
+      - name: Publica a Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          id="${{ steps.files.outputs.id }}"
+          version="${{ steps.files.outputs.version }}"
+          tag="${{ github.ref_type == 'tag' && github.ref_name || '' }}"
+          [ -n "$tag" ] || tag="v$version"
+          # Rodar a mesma tag de novo troca os anexos em vez de falhar.
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "$id-$version.mcmod" "$id.mcmod" --clobber
+          else
+            gh release create "$tag" "$id-$version.mcmod" "$id.mcmod" \
+              --title "v$version" \
+              --notes "Mod \`$id\` v$version. Ponha \`$id.mcmod\` na MODS_DIR do servidor, ou use \`/mod previa <link>\`."
+          fi

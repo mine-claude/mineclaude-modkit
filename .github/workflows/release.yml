@@ -1,0 +1,117 @@
+name: release
+# Uma tag `v<versão>` (ou uma execução manual) confere o kit em TypeScript estrito, prova que ele funciona de ponta
+# a ponta e publica o pacote. Sem action de terceiros: só o `actions/checkout` do próprio GitHub; o Bun vem do
+# instalador oficial.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instala o Bun
+        run: |
+          set -euo pipefail
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+
+      - name: Instala as dependências de desenvolvimento
+        run: bun install --frozen-lockfile || bun install
+
+      - name: TypeScript estrito, sem erro
+        run: bun run typecheck
+
+      # o dist/ versionado tem de ser o que o compilador produz agora
+      - name: O dist/ está em dia com o src/
+        run: |
+          set -euo pipefail
+          bun run build
+          if ! git diff --quiet -- dist; then
+            echo "O dist/ versionado não é o que o tsc produz. Rode 'bun run build' e comite."
+            git --no-pager diff --stat -- dist
+            exit 1
+          fi
+
+      # A prova de que o kit funciona: cria um mod do zero, confere, monta e empacota, nas duas linguagens.
+      # Se isto falhar, a Release não sai.
+      - name: Prova de ponta a ponta
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          for flavour in "" "--js"; do
+            name="prova$(echo "$flavour" | tr -dc 'a-z')"
+            bun bin/mineclaude-modkit.mjs new "$name" --dir "$work" $flavour
+            bun bin/mineclaude-modkit.mjs check "$work/$name"
+            bun bin/mineclaude-modkit.mjs pack "$work/$name"
+            test -f "$work/$name/$name.mcmod"
+            # determinístico: empacotar nos mesmos arquivos montados dá os mesmos bytes
+            bun bin/mineclaude-modkit.mjs pack "$work/$name" --out "$work/$name/again.mcmod" --no-build
+            cmp "$work/$name/$name.mcmod" "$work/$name/again.mcmod"
+            # e o empacotador de um arquivo que viaja dentro do mod escreve o mesmo pacote
+            (cd "$work/$name" && bun tools/pack.mjs --out vendored.mcmod --no-build)
+            cmp "$work/$name/$name.mcmod" "$work/$name/vendored.mcmod"
+            echo "ok: $name"
+          done
+          # os mods de exemplo também conferem e empacotam
+          for ex in examples/*/; do
+            [ -f "$ex/package.json" ] || continue
+            bun bin/mineclaude-modkit.mjs sdk "$ex"
+            bun bin/mineclaude-modkit.mjs check "$ex"
+            bun bin/mineclaude-modkit.mjs pack "$ex" --force
+            echo "ok: $ex"
+          done
+          git checkout -- examples || true
+          git clean -fdq examples || true
+
+      - name: Monta os anexos
+        id: kit
+        run: |
+          set -euo pipefail
+          version="$(jq -r .version package.json)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          # 1) o pacote, instalável com `bun add ./arquivo.tgz` ou `npm i ./arquivo.tgz`
+          bun pm pack --destination .
+          tgz="$(ls -1 *.tgz | head -1)"
+          mv "$tgz" "mineclaude-modkit-$version.tgz"
+          # 2) o kit inteiro, para descompactar e rodar
+          out="mineclaude-modkit-$version"
+          mkdir -p "pack/$out"
+          cp -r bin dist src runtime types templates examples docs tsconfig.json README.md CHANGELOG.md LICENSE package.json "pack/$out/"
+          rm -rf "pack/$out"/examples/*/dist "pack/$out"/examples/*/*.mcmod
+          (cd pack && zip -qr "../$out.zip" "$out")
+          ls -l "mineclaude-modkit-$version.tgz" "$out.zip"
+
+      - name: Publica a Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="${{ steps.kit.outputs.version }}"
+          tag="${{ github.ref_type == 'tag' && github.ref_name || '' }}"
+          [ -n "$tag" ] || tag="v$version"
+          tgz="mineclaude-modkit-$version.tgz"
+          zip="mineclaude-modkit-$version.zip"
+          notes="MineClaude modkit v$version.
+
+          Instalar num repositório de mod:
+
+              bun add -d github:mine-claude/mineclaude-modkit#$tag
+
+          Ou baixe o \`.tgz\` (pacote) ou o \`.zip\` (o kit inteiro) e rode:
+
+              bun bin/mineclaude-modkit.mjs help
+
+          Precisa só do Bun (ou Node 20+). Comece por \`docs/comece-aqui.md\`; as mudanças estão no \`CHANGELOG.md\`."
+          # Rodar a mesma tag de novo troca os anexos em vez de falhar.
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "$tgz" "$zip" --clobber
+          else
+            gh release create "$tag" "$tgz" "$zip" --title "v$version" --notes "$notes"
+          fi

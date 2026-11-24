@@ -1,0 +1,54 @@
+{
+  "name": "@mineclaude/modkit",
+  "version": "0.2.0",
+  "description": "MineClaude modkit: o contrato de mods (casca do SDK + tipos), a CLI autonoma (new/build/pack/check), modelos e documentacao",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "module",
+  "homepage": "https://mineclaude.com",
+  "bin": {
+    "mineclaude-modkit": "bin/mineclaude-modkit.mjs",
+    "modkit": "bin/mineclaude-modkit.mjs"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+    "./pack": { "types": "./dist/pack.d.ts", "default": "./dist/pack.js" },
+    "./check": { "types": "./dist/check.d.ts", "default": "./dist/check.js" },
+    "./build": { "types": "./dist/build.d.ts", "default": "./dist/build.js" },
+    "./new": { "types": "./dist/new.d.ts", "default": "./dist/new.js" },
+    "./rules": { "types": "./dist/rules.d.ts", "default": "./dist/rules.js" },
+    "./versions": { "types": "./dist/versions.d.ts", "default": "./dist/versions.js" },
+    "./sdk": "./runtime/mineclaude-sdk.js",
+    "./mod-types": "./types/mineclaude-mod.d.ts",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "bun": ">=1.1",
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepare": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "~5.9.3"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "src",
+    "runtime",
+    "types",
+    "templates",
+    "docs",
+    "examples",
+    "tsconfig.json",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ]
+}

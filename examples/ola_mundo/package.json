@@ -1,0 +1,15 @@
+{
+  "name": "ola_mundo",
+  "version": "0.1.0",
+  "description": "O menor mod possivel: um comando de chat. So no servidor.",
+  "authors": [
+    "MineClaude"
+  ],
+  "private": true,
+  "scripts": {
+    "server": "dist/server/main.js",
+    "_sources": {
+      "server": "src/server.ts"
+    }
+  }
+}

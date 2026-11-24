@@ -1,0 +1,15 @@
+{
+  "name": "bloco_lampada",
+  "version": "0.1.0",
+  "description": "Um bloco que acende, com a textura pintada por codigo e a receita.",
+  "authors": [
+    "MineClaude"
+  ],
+  "private": true,
+  "scripts": {
+    "main": "dist/main/main.js",
+    "_sources": {
+      "main": "src/main.ts"
+    }
+  }
+}

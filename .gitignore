@@ -1,0 +1,6 @@
+node_modules/
+*.mcmod
+*.tgz
+*.zip
+pack/
+examples/*/dist/

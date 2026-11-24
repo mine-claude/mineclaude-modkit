@@ -1,0 +1,11 @@
+# Todo arquivo de texto deste repositório é LF, no disco e no git.
+#
+# Isto não é estética: o `.mcmod` é empacotado byte a byte igual ao do jogo, e os arquivos que viajam dentro dele
+# (a casca `mineclaude-sdk.js`, o `templates/pack.mjs` que vai para dentro de cada mod) entram no zip como estão no
+# disco. Se o git trocasse LF por CRLF num checkout do Windows, o mesmo mod daria dois pacotes diferentes em duas
+# máquinas, e a conferência byte a byte no repositório do jogo passaria a reprovar sem motivo.
+* text=auto eol=lf
+*.png binary
+*.mcmod binary
+*.tgz binary
+*.zip binary
